@@ -3,6 +3,7 @@ plugins {
 	id "com.bmuschko.docker-remote-api" version "6.1.4"
 	id "com.github.node-gradle.node" version "2.2.3"
 	id "com.diffplug.gradle.spotless" version "3.27.1"
+    id 'org.beryx.runtime' version '1.8.0'
 }
 
 apply plugin: 'java'
@@ -13,7 +14,8 @@ apply plugin: 'jacoco'
 apply plugin: 'checkstyle'
 apply plugin: 'project-report' // adds dependencyReport and htmlDependencyReport tasks
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
 
 boolean isTestEnv = project.hasProperty("testEnv")
 
@@ -72,7 +74,7 @@ dependencies {
 	compile 'commons-collections:commons-collections:3.2.2'
 
 	// Supported databases:
-	compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '8.2.1.jre8'
+	compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '8.2.1.jre11'
 	compile group: 'org.postgresql', name: 'postgresql', version: '42.2.10' // If using postgresql
 	compile group: 'org.liquibase', name: 'liquibase-core', version: '3.8.7' // or newer, for postgresql dropPrimaryKey fix [CORE-3129]
 
@@ -93,6 +95,9 @@ dependencies {
 	// used for writing Excel documents
 	compile group: 'org.apache.poi', name: 'poi', version: '4.1.2'
 	compile group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
+
+	// For Java 11
+	compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
 
 	// For parsing HTML to check for 'empty' input
 	compile 'org.jsoup:jsoup:1.13.1'
@@ -117,7 +122,7 @@ test {
 }
 
 jacoco {
-    toolVersion = "0.8.1"
+    toolVersion = "0.8.2"
 }
 
 jacocoTestReport {
@@ -126,6 +131,16 @@ jacocoTestReport {
 		html.enabled false
 	}
 }
+
+runtime {
+    options = ['--vm=server', '--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    // modules = ['java.naming', 'java.xml', 'java.management']
+		jpackage {
+				jpackageHome = '/home/vassil/jdk-14'
+				installerType = 'deb'
+		}
+}
+
 
 //Set project version to git tag
 def proc = "git describe".execute(null, projectDir);
@@ -443,7 +458,7 @@ distributions {
 		contents {
 			into('docs/') {
 				from('anet.yml') { rename('anet.yml', 'anet.yml.template') }
-				from(markdownToHtml)
+				// from(markdownToHtml)
 			}
 			into('lib/') {
 				from('lib/sqljdbc_auth.dll')
@@ -460,11 +475,11 @@ startScripts {
 }
 
 //Configure Markdown plugin
-allprojects {
-	markdownToHtml.sourceDir = file("docs")
-	markdownToHtml.outputDir = file("$buildDir/documentation")
-	markdownToHtml.hardwraps = true
-}
+// allprojects {
+// 	markdownToHtml.sourceDir = file("docs")
+// 	markdownToHtml.outputDir = file("$buildDir/documentation")
+// 	markdownToHtml.hardwraps = true
+// }
 
 node {
 	nodeModulesDir = file("${project.projectDir}/client")
