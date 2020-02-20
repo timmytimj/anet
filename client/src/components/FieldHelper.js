@@ -86,9 +86,8 @@ const Field = ({
     label = utils.sentenceCase(field.name) // name is a required prop of field
   }
 
-  // setting label or extraColElem explicitly to null will completely remove these columns!
-  const widgetWidth =
-    12 - (label === null ? 0 : 2) - (extraColElem === null ? 0 : 3)
+  // setting label explicitly to null will completely remove the label column!
+  const widgetWidth = 12 - (label === null ? 0 : 2)
   // controlId prop of the FormGroup sets the id of the control element
   return (
     <FormGroup id={`fg-${id}`} controlId={id} validationState={validationState}>
@@ -112,10 +111,10 @@ const Field = ({
               {getHelpBlock(field, form)}
               {children}
             </div>
+            {extraColElem}
           </Col>
         </>
       )}
-      {extraColElem && <Col sm={3} {...extraColElem.props} />}
     </FormGroup>
   )
 }
