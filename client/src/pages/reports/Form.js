@@ -61,52 +61,8 @@ import utils from "utils"
 import AttendeesTable from "./AttendeesTable"
 import AuthorizationGroupTable from "./AuthorizationGroupTable"
 
-const GQL_GET_RECENTS = gql`
-  query($taskQuery: TaskSearchQueryInput) {
-    locationList(
-      query: {
-        pageSize: 6
-        status: ACTIVE
-        inMyReports: true
-        sortBy: RECENT
-        sortOrder: DESC
-      }
-    ) {
-      list {
-        ${Location.autocompleteQuery}
-      }
-    }
-    personList(
-      query: {
-        pageSize: 6
-        status: ACTIVE
-        inMyReports: true
-        sortBy: RECENT
-        sortOrder: DESC
-      }
-    ) {
-      list {
-        ${Person.autocompleteQuery}
-      }
-    }
-    taskList(query: $taskQuery) {
-      list {
-        ${Task.autocompleteQuery}
-      }
-    }
-    authorizationGroupList(
-      query: {
-        pageSize: 6
-        status: ACTIVE
-        inMyReports: true
-        sortBy: RECENT
-        sortOrder: DESC
-      }
-    ) {
-      list {
-        ${AuthorizationGroup.autocompleteQuery}
-      }
-    }
+const GQL_GET_TAG_LIST = gql`
+  query {
     tagList(
       query: {
         pageSize: 0 # retrieve all
@@ -190,35 +146,7 @@ const ReportForm = ({
       window.clearTimeout(autoSaveSettings.timeoutId)
     }
   })
-
-  const recentTasksVarCommon = {
-    pageSize: 6,
-    status: Task.STATUS.ACTIVE,
-    hasCustomFieldRef1: true,
-    sortBy: "RECENT",
-    sortOrder: "DESC"
-  }
-
-  let recentTasksVarUser
-  if (currentUser.isAdmin()) {
-    recentTasksVarUser = recentTasksVarCommon
-  } else if (currentUser.position?.organization) {
-    recentTasksVarUser = {
-      ...recentTasksVarCommon,
-      inMyReports: true,
-      taskedOrgUuid: currentUser.position?.organization?.uuid,
-      orgRecurseStrategy: RECURSE_STRATEGY.PARENTS
-    }
-  } else {
-    recentTasksVarUser = {
-      pageSize: 1,
-      status: Task.STATUS.ACTIVE,
-      text: "__should_not_match_anything__" // TODO: Do this more gracefully
-    }
-  }
-  const { loading, error, data } = API.useApiQuery(GQL_GET_RECENTS, {
-    taskQuery: recentTasksVarUser
-  })
+  const { loading, error, data } = API.useApiQuery(GQL_GET_TAG_LIST)
   const { done, result } = useBoilerplate({
     loading,
     error,
@@ -286,15 +214,8 @@ const ReportForm = ({
     }
   ]
 
-  let recents = []
   let tagSuggestions = []
   if (data) {
-    recents = {
-      locations: data.locationList.list,
-      persons: data.personList.list,
-      tasks: data.taskList.list,
-      authorizationGroups: data.authorizationGroupList.list
-    }
     // ReactTags expects id and text properties
     tagSuggestions = data.tagList.list.map(tag => ({
       id: tag.uuid,
@@ -352,6 +273,15 @@ const ReportForm = ({
         const currentOrg =
           currentUser.position && currentUser.position.organization
         const locationFilters = {
+          recentLocations: {
+            label: "Recent locations",
+            queryVars: {
+              status: Location.STATUS.ACTIVE,
+              inMyReports: true,
+              sortBy: "RECENT",
+              sortOrder: "DESC"
+            }
+          },
           activeLocations: {
             label: "Active locations",
             queryVars: { status: Location.STATUS.ACTIVE }
@@ -359,6 +289,15 @@ const ReportForm = ({
         }
 
         const attendeesFilters = {
+          recentAttendees: {
+            label: "Recent attendees",
+            queryVars: {
+              status: Person.STATUS.ACTIVE,
+              inMyReports: true,
+              sortBy: "RECENT",
+              sortOrder: "DESC"
+            }
+          },
           all: {
             label: "All",
             queryVars: { matchPositionName: true }
@@ -401,6 +340,15 @@ const ReportForm = ({
         }
 
         const tasksFilters = {}
+        tasksFilters.recentTasks = {
+          label: "Recent efforts",
+          queryVars: {
+            status: Task.STATUS.ACTIVE,
+            inMyReports: true,
+            sortBy: "RECENT",
+            sortOrder: "DESC"
+          }
+        }
 
         if (currentOrg) {
           tasksFilters.assignedToMyOrg = {
@@ -440,6 +388,15 @@ const ReportForm = ({
         }
 
         const authorizationGroupsFilters = {
+          recentAuthorizationGroups: {
+            label: "Recent authorization groups",
+            queryVars: {
+              status: AuthorizationGroup.STATUS.ACTIVE,
+              inMyReports: true,
+              sortBy: "RECENT",
+              sortOrder: "DESC"
+            }
+          },
           allAuthorizationGroups: {
             label: "All authorization groups",
             queryVars: {}
@@ -603,23 +560,6 @@ const ReportForm = ({
                       addon={LOCATIONS_ICON}
                     />
                   }
-                  extraColElem={
-                    <>
-                      <FieldHelper.FieldShortcuts
-                        title="Recent Locations"
-                        shortcuts={recents.locations}
-                        fieldName="location"
-                        objectType={Location}
-                        curValue={values.location}
-                        onChange={value => {
-                          // validation will be done by setFieldValue
-                          setFieldTouched("location", true, false) // onBlur doesn't work when selecting an option
-                          setFieldValue("location", value, true)
-                        }}
-                        handleAddItem={FieldHelper.handleSingleSelectAddItem}
-                      />
-                    </>
-                  }
                 />
 
                 {!isFutureEngagement && (
@@ -770,26 +710,6 @@ const ReportForm = ({
                       addon={PEOPLE_ICON}
                     />
                   }
-                  extraColElem={
-                    <>
-                      <FieldHelper.FieldShortcuts
-                        title="Recent attendees"
-                        shortcuts={recents.persons}
-                        fieldName="attendees"
-                        objectType={Person}
-                        curValue={values.attendees}
-                        onChange={value => {
-                          updateAttendees(
-                            setFieldValue,
-                            setFieldTouched,
-                            "attendees",
-                            value
-                          )
-                        }}
-                        handleAddItem={FieldHelper.handleMultiSelectAddItem}
-                      />
-                    </>
-                  }
                 />
               </Fieldset>
 
@@ -833,24 +753,6 @@ const ReportForm = ({
                       fields={Task.autocompleteQuery}
                       addon={TASKS_ICON}
                     />
-                  }
-                  extraColElem={
-                    <>
-                      <FieldHelper.FieldShortcuts
-                        title={`Recent ${tasksLabel}`}
-                        shortcuts={recents.tasks}
-                        fieldName="tasks"
-                        objectType={Task}
-                        curValue={values.tasks}
-                        onChange={value => {
-                          // validation will be done by setFieldValue
-                          setFieldTouched("tasks", true, false) // onBlur doesn't work when selecting an option
-                          setFieldValue("tasks", value, true)
-                          setReportTasks(value)
-                        }}
-                        handleAddItem={FieldHelper.handleMultiSelectAddItem}
-                      />
-                    </>
                   }
                 />
               </Fieldset>
@@ -1021,33 +923,6 @@ const ReportForm = ({
                             fields={AuthorizationGroup.autocompleteQuery}
                             addon={<Icon icon={IconNames.LOCK} />}
                           />
-                        }
-                        extraColElem={
-                          <>
-                            <FieldHelper.FieldShortcuts
-                              title="Recent Authorization Groups"
-                              shortcuts={recents.authorizationGroups}
-                              fieldName="authorizationGroups"
-                              objectType={AuthorizationGroup}
-                              curValue={values.authorizationGroups}
-                              onChange={value => {
-                                // validation will be done by setFieldValue
-                                setFieldTouched(
-                                  "authorizationGroups",
-                                  true,
-                                  false
-                                ) // onBlur doesn't work when selecting an option
-                                setFieldValue(
-                                  "authorizationGroups",
-                                  value,
-                                  true
-                                )
-                              }}
-                              handleAddItem={
-                                FieldHelper.handleMultiSelectAddItem
-                              }
-                            />
-                          </>
                         }
                       />
                     </div>
