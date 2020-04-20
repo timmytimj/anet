@@ -83,8 +83,8 @@ const GQL_GET_RECENTS = gql`
         uuid
         name
         attendedReports(
-          query : {
-            pageSize : 0 # retrieve all
+          query: {
+            pageSize: 0 # retrieve all
           }
         ) {
           list {
@@ -1359,7 +1359,8 @@ const BaseReportForm = ({
         "lastName",
         "position",
         "customFields",
-        "formCustomFields"
+        "formCustomFields",
+        "attendedReports"
       )
     )
     // strip tasks fields not in data model
