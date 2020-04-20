@@ -90,8 +90,9 @@ public class ReportsResourceTest extends AbstractResourceTest {
   private static final String TASK_FIELDS =
       String.format("%1$s customFieldRef1 { %1$s }", _TASK_FIELDS);
   private static final String FIELDS = String.format("%1$s" + " advisorOrg { %2$s }"
-      + " principalOrg { %2$s }" + " author { %3$s }" + " attendees { %3$s primary }"
-      + " tasks { %4$s }" + " approvalStep { uuid relatedObjectUuid }" + " location { %5$s }"
+      + " principalOrg { %2$s }" + " author { %3$s }"
+      + " attendees { %3$s primary conflictedReports { %1$s } }" + " tasks { %4$s }"
+      + " approvalStep { uuid relatedObjectUuid }" + " location { %5$s }"
       + " tags { uuid name description }" + " comments { %6$s }"
       + " authorizationGroups { uuid name }"
       + " workflow { step { uuid relatedObjectUuid approvers { uuid person { uuid } } } person { uuid } type createdAt }",
@@ -317,6 +318,9 @@ public class ReportsResourceTest extends AbstractResourceTest {
 
     // verify the location on this report
     assertThat(returned.getLocationUuid()).isEqualTo(loc.getUuid());
+
+    // conflicted reports should be added to principal's conflicted report
+    principal.setConflictedReports(returned.getAttendees().get(0).getConflictedReports());
 
     // verify the principals on this report
     assertThat(returned.getAttendees()).contains(principal);

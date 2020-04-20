@@ -82,6 +82,17 @@ const GQL_GET_RECENTS = gql`
       list {
         uuid
         name
+        attendedReports(
+          query : {
+            pageSize : 0 # retrieve all
+          }
+        ) {
+          list {
+            uuid
+            engagementDate
+            duration
+          }
+        }
         rank
         role
         status

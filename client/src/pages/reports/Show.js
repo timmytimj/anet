@@ -99,6 +99,11 @@ const GQL_GET_REPORT = gql`
       attendees {
         uuid
         name
+        conflictedReports {
+            uuid
+            engagementDate
+            duration
+        }
         primary
         rank
         role

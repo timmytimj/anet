@@ -80,9 +80,14 @@ public abstract class AbstractReportSearcher extends AbstractSearcher<Report, Re
     }
 
     qb.addEqualsClause("authorUuid", "reports.\"authorUuid\"", query.getAuthorUuid());
-    qb.addDateRangeClause("startDate", "reports.\"engagementDate\"", Comparison.AFTER,
-        query.getEngagementDateStart(), "endDate", "reports.\"engagementDate\"", Comparison.BEFORE,
-        query.getEngagementDateEnd());
+
+    if (query.isCheckConflictedReports()) {
+      addConflictingReportsQuery(query);
+    } else {
+      qb.addDateRangeClause("startDate", "reports.\"engagementDate\"", Comparison.AFTER,
+          query.getEngagementDateStart(), "endDate", "reports.\"engagementDate\"",
+          Comparison.BEFORE, query.getEngagementDateEnd());
+    }
     qb.addDateRangeClause("startCreatedAt", "reports.\"createdAt\"", Comparison.AFTER,
         query.getCreatedAtStart(), "endCreatedAt", "reports.\"createdAt\"", Comparison.BEFORE,
         query.getCreatedAtEnd());
@@ -344,5 +349,7 @@ public abstract class AbstractReportSearcher extends AbstractSearcher<Report, Re
     }
     qb.addAllOrderByClauses(getOrderBy(SortOrder.ASC, null, "reports_uuid"));
   }
+
+  protected abstract void addConflictingReportsQuery(ReportSearchQuery query);
 
 }

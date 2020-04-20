@@ -116,6 +116,9 @@ public class ReportSearchQuery extends AbstractSearchQuery<ReportSearchSortBy> {
   // internal search parameter:
   private boolean systemSearch;
 
+  // internal parameter for query search
+  private boolean checkConflictedReports;
+
   public ReportSearchQuery() {
     super(ReportSearchSortBy.CREATED_AT);
     this.setSortOrder(SortOrder.DESC);
@@ -369,6 +372,16 @@ public class ReportSearchQuery extends AbstractSearchQuery<ReportSearchSortBy> {
   @JsonIgnore
   public void setSystemSearch(boolean systemSearch) {
     this.systemSearch = systemSearch;
+  }
+
+  @JsonIgnore
+  public boolean isCheckConflictedReports() {
+    return checkConflictedReports;
+  }
+
+  @JsonIgnore
+  public void setCheckConflictedReports(boolean checkConflictedReports) {
+    this.checkConflictedReports = checkConflictedReports;
   }
 
   @Override

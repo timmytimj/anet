@@ -24,6 +24,15 @@ const GQL_GET_REPORT_LIST = gql`
       totalCount
       list {
         uuid
+        attendees {
+          uuid
+          name
+          conflictedReports {
+            uuid
+            engagementDate
+            duration
+          }
+        }
         intent
         engagementDate
         duration

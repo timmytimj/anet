@@ -1,10 +1,12 @@
 package mil.dds.anet.beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
 import io.leangen.graphql.annotations.GraphQLInputField;
 import io.leangen.graphql.annotations.GraphQLQuery;
 import io.leangen.graphql.annotations.GraphQLRootContext;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -14,9 +16,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import javax.ws.rs.WebApplicationException;
 import mil.dds.anet.AnetObjectEngine;
 import mil.dds.anet.beans.Person.Role;
+import mil.dds.anet.beans.lists.AnetBeanList;
+import mil.dds.anet.beans.search.ReportSearchQuery;
 import mil.dds.anet.utils.DaoUtils;
 import mil.dds.anet.utils.IdDataLoaderKey;
 import mil.dds.anet.utils.Utils;
@@ -267,15 +272,49 @@ public class Report extends AbstractCustomizableAnetBean {
       return CompletableFuture.completedFuture(attendees);
     }
     return AnetObjectEngine.getInstance().getReportDao().getAttendeesForReport(context, uuid)
-        .thenApply(o -> {
+        .thenApply(o -> loadConflictedMeetings(context, o)).thenApply(o -> {
           attendees = o;
           return o;
         });
   }
 
+  // Find if attendees have other meetings that coincide with this report's meeting time
+  private List<ReportPerson> loadConflictedMeetings(Map<String, Object> context,
+      List<ReportPerson> reportPersonList) {
+    // Check if this report has a valid engagement date ,
+    // otherwise it is useless to control overlapping times.
+    if (getEngagementDate() != null) {
+      Instant engagementStartDate = this.getEngagementDate();
+      Instant engagementEndDate = engagementStartDate
+          .plus(getDuration() != null ? this.getDuration() : 0, ChronoUnit.MINUTES);
+
+      // For every attendee for this report ;
+      // We have to check if they have any conflicted meetings
+      for (ReportPerson reportPerson : reportPersonList) {
+
+        ReportSearchQuery query = new ReportSearchQuery();
+        query.setAttendeeUuid(reportPerson.getUuid());
+        query.setUser(DaoUtils.getUserFromContext(context));
+        query.setCheckConflictedReports(true);
+        query.setPageSize(0); // retrieve all
+        query.setEngagementDateStart(engagementStartDate);
+        query.setEngagementDateEnd(engagementEndDate);
+
+        AnetBeanList<Report> conflictedReports =
+            AnetObjectEngine.getInstance().getReportDao().search(query);
+        reportPerson.setConflictedReports(conflictedReports.getList().stream()
+            .filter(report -> !(report.getUuid().equals(this.getUuid())))
+            .collect(Collectors.toList()));
+
+      }
+    }
+    return reportPersonList;
+  }
+
   public List<ReportPerson> getAttendees() {
     return attendees;
   }
+
 
   @GraphQLInputField(name = "attendees")
   public void setAttendees(List<ReportPerson> attendees) {

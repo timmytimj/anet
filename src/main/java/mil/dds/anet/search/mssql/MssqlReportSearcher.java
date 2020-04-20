@@ -58,6 +58,25 @@ public class MssqlReportSearcher extends AbstractReportSearcher {
   }
 
   @Override
+  protected void addConflictingReportsQuery(ReportSearchQuery query) {
+    // to find overlapping times the rule should be like below :
+    // overlapping example : assume that our report_startDate 08 : 00 and report_endDate 10 : 00
+    // scenario 1 : otherReportStartDate 09 : 00 otherReportEndDate 12 : 00 //overlaps
+    // scenario 2 : otherReportStartDate 07 : 00 otherReportEndDate 09 : 00 //overlaps
+    // scenario 3 : otherReportStartDate 08 : 30 otherReportEndDate 09 : 30 //overlaps
+    qb.addDateRangeClause("startDate",
+        /* below is otherReportEndDate */
+        "DATEADD(MINUTE, ISNULL(reports.\"duration\",0), reports.\"engagementDate\")",
+        AbstractSearchQueryBuilder.Comparison.GREATER_THAN,
+        /* below is report_startDate */
+        query.getEngagementDateStart(), "endDate",
+        /* below is otherReportStartDate */
+        "reports.\"engagementDate\"", AbstractSearchQueryBuilder.Comparison.LESS_THAN,
+        /* below is report_endDate */
+        query.getEngagementDateEnd());
+  }
+
+  @Override
   protected void addBatchClause(ReportSearchQuery query) {
     addBatchClause(outerQb, query);
   }

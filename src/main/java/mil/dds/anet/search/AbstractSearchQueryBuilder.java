@@ -21,7 +21,7 @@ import org.jdbi.v3.core.mapper.RowMapper;
 public abstract class AbstractSearchQueryBuilder<B extends AbstractAnetBean, T extends AbstractSearchQuery<?>> {
 
   public enum Comparison {
-    AFTER(">="), BEFORE("<=");
+    AFTER(">="), BEFORE("<="), GREATER_THAN(">"), LESS_THAN("<");
 
     private String op;
 
