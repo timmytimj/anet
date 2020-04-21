@@ -15,9 +15,9 @@ import LinkTo from "components/LinkTo"
 import Messages from "components/Messages"
 import {
   AnchorLink,
-  PageDispatchersPropType,
   jumpToTop,
   mapPageDispatchersToProps,
+  PageDispatchersPropType,
   useBoilerplate
 } from "components/Page"
 import RelatedObjectNotes, {
@@ -43,6 +43,7 @@ import { toast } from "react-toastify"
 import { deserializeQueryParams } from "searchUtils"
 import utils from "utils"
 import { parseHtmlWithLinkTo } from "utils_links"
+import ReportConflictIcon from "components/ReportConflictIcon"
 import AttendeesTable from "./AttendeesTable"
 import AuthorizationGroupTable from "./AuthorizationGroupTable"
 
@@ -523,10 +524,18 @@ const BaseReportShow = ({ currentUser, setSearchQuery, pageDispatchers }) => {
                   name="engagementDate"
                   component={FieldHelper.ReadonlyField}
                   humanValue={
-                    report.engagementDate &&
-                    moment(report.engagementDate).format(
-                      Report.getEngagementDateFormat()
-                    )
+                    <>
+                      {report.engagementDate &&
+                        moment(report.engagementDate).format(
+                          Report.getEngagementDateFormat()
+                        )}
+                      {Report.hasPlanningConflicts(report) && (
+                        <ReportConflictIcon
+                          large
+                          tooltip="This report has planning conflicts. Check out meeting attendees for further details."
+                        />
+                      )}
+                    </>
                   }
                 />
 

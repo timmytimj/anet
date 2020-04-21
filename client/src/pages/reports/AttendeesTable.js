@@ -1,10 +1,21 @@
 import LinkTo from "components/LinkTo"
-import { Person } from "models"
+import { Person, Report } from "models"
 import PropTypes from "prop-types"
 import React from "react"
 import { Button, Label, Radio, Table } from "react-bootstrap"
 import REMOVE_ICON from "resources/delete.png"
 import "./AttendeesTable.css"
+import {
+  Popover,
+  PopoverInteractionKind,
+  Intent,
+  Callout,
+  Button as BpButton
+} from "@blueprintjs/core"
+import { IconNames } from "@blueprintjs/icons"
+import moment from "moment"
+import pluralize from "pluralize"
+import { cloneDeep } from "lodash"
 
 const RemoveIcon = () => (
   <img src={REMOVE_ICON} height={14} alt="Remove attendee" />
@@ -28,7 +39,7 @@ const AttendeeDividerRow = () => (
   </tr>
 )
 
-const TableHeader = ({ showDelete, hide }) => (
+const TableHeader = ({ showConflict, showDelete, hide }) => (
   <thead>
     <tr>
       <th className="col-xs-1" style={{ textAlign: "center" }}>
@@ -36,13 +47,19 @@ const TableHeader = ({ showDelete, hide }) => (
       </th>
       <th className="col-xs-3">{!hide && "Name"}</th>
       <th className="col-xs-3">{!hide && "Position"}</th>
-      <th className="col-xs-2">{!hide && "Location"}</th>
+      <th className="col-xs-1">{!hide && "Location"}</th>
       <th className="col-xs-2">{!hide && "Organization"}</th>
+      {showConflict && (
+        <th className="col-xs-1" style={{ paddingLeft: "20px" }}>
+          {!hide && "Conflicts"}
+        </th>
+      )}
       {showDelete && <th className="col-xs-1" />}
     </tr>
   </thead>
 )
 TableHeader.propTypes = {
+  showConflict: PropTypes.bool,
   showDelete: PropTypes.bool,
   hide: PropTypes.bool
 }
@@ -93,6 +110,62 @@ RadioButton.propTypes = {
   handleOnChange: PropTypes.func
 }
 
+const PlannigConflict = ({ person }) => {
+  if (!person.conflictedReports || !person?.conflictedReports?.length) {
+    return ""
+  }
+
+  const reports = cloneDeep(person.conflictedReports).sort(
+    (a, b) => a.engagementDate - b.engagementDate
+  )
+
+  return (
+    <Popover
+      content={
+        <Callout
+          title={
+            person.toString() +
+            " has " +
+            reports.length +
+            " conflicting " +
+            pluralize("report", reports.length)
+          }
+          intent={Intent.WARNING}
+        >
+          {reports.map(report => (
+            <LinkTo
+              key={report.uuid}
+              modelType="Report"
+              model={report}
+              style={{ display: "block" }}
+            >
+              {moment(report.engagementDate).format(
+                Report.getEngagementDateFormat()
+              )}
+              {" >>> "}
+              {report.duration > 0
+                ? moment(report.engagementDate)
+                  .add(report.duration, "minutes")
+                  .format(Report.getEngagementDateFormat())
+                : "..."}
+            </LinkTo>
+          ))}
+        </Callout>
+      }
+      target={
+        <BpButton icon={IconNames.WARNING_SIGN} intent={Intent.WARNING} minimal>
+          {reports.length}&nbsp;{pluralize("conflict", reports.length)}
+        </BpButton>
+      }
+      interactionKind={PopoverInteractionKind.CLICK}
+    />
+  )
+}
+
+PlannigConflict.propTypes = {
+  person: PropTypes.object.isRequired
+}
+
 const AttendeesTable = ({
   attendees,
   disabled,
@@ -103,7 +176,10 @@ const AttendeesTable = ({
   return (
     <div id="attendeesContainer">
       <TableContainer className="advisorAttendeesTable">
-        <TableHeader showDelete={showDelete} />
+        <TableHeader
+          showDelete={showDelete}
+          showConflict={Report.hasPlanningConflicts({ attendees })}
+        />
         <TableBody
           attendees={attendees}
           role={Person.ROLE.ADVISOR}
@@ -111,7 +187,11 @@ const AttendeesTable = ({
         />
       </TableContainer>
       <TableContainer className="principalAttendeesTable">
-        <TableHeader hide />
+        <TableHeader
+          hide
+          showDelete={showDelete}
+          showConflict={Report.hasPlanningConflicts({ attendees })}
+        />
         <TableBody
           attendees={attendees}
           role={Person.ROLE.PRINCIPAL}
@@ -157,6 +237,11 @@ const AttendeesTable = ({
             whenUnspecified=""
           />
         </td>
+        {Report.hasPlanningConflicts({ attendees }) && (
+          <td>
+            <PlannigConflict person={person} />
+          </td>
+        )}
         {showDelete && (
           <td>
             <RemoveButton
