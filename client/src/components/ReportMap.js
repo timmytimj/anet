@@ -2,8 +2,8 @@ import API from "api"
 import { gql } from "apollo-boost"
 import Leaflet from "components/Leaflet"
 import {
-  PageDispatchersPropType,
   mapPageDispatchersToProps,
+  PageDispatchersPropType,
   useBoilerplate
 } from "components/Page"
 import _escape from "lodash/escape"
@@ -11,6 +11,9 @@ import { Location } from "models"
 import PropTypes from "prop-types"
 import React, { useEffect, useMemo } from "react"
 import { connect } from "react-redux"
+import ReactDOMServer from "react-dom/server"
+import { Callout, Intent } from "@blueprintjs/core"
+import Report from "../models/Report"
 
 const GQL_GET_REPORT_LIST = gql`
   query($reportQuery: ReportSearchQueryInput) {
@@ -71,6 +74,19 @@ const ReportMap = ({
       if (Location.hasCoordinates(report.location)) {
         let label = _escape(report.intent || "<undefined>") // escape HTML in intent!
         label += `<br/>@ <b>${_escape(report.location.name)}</b>` // escape HTML in locationName!
+
+        if (Report.hasPlanningConflicts(report)) {
+          label += ReactDOMServer.renderToString(
+            <Callout
+              intent={Intent.WARNING}
+              style={{ marginTop: "8px", fontSize: "1em" }}
+            >
+              This report has planning conflicts. Display report for further
+              details.
+            </Callout>
+          )
+        }
+
         markerArray.push({
           id: report.uuid,
           lat: report.location.lat,
