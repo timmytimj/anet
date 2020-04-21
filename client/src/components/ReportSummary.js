@@ -15,6 +15,7 @@ import PropTypes from "prop-types"
 import React, { useEffect, useRef, useState } from "react"
 import { Col, Grid, Label, Row } from "react-bootstrap"
 import utils from "utils"
+import ReportConflictIcon from "./ReportConflictIcon"
 
 const GQL_GET_REPORT_LIST = gql`
   query($reportQuery: ReportSearchQueryInput) {
@@ -264,6 +265,7 @@ const ReportSummaryRow = ({ report }) => {
               )}
             </Label>
           )}
+          {Report.hasPlanningConflicts(report) && <ReportConflictIcon large />}
         </Col>
       </Row>
       <Row>

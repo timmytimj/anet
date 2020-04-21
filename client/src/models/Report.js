@@ -410,4 +410,14 @@ export default class Report extends Model {
     })
     return { taskToAssessmentUuid, taskAssessments }
   }
+
+  static hasPlanningConflicts(report) {
+    return (
+      report &&
+      report.attendees &&
+      report.attendees.some(
+        at => at.conflictedReports && at.conflictedReports.length
+      )
+    )
+  }
 }
