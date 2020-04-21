@@ -7,7 +7,9 @@ import { Person, Report } from "models"
 import moment from "moment"
 import PropTypes from "prop-types"
 import React, { useRef } from "react"
+import ReactDOM from "react-dom"
 import { useHistory } from "react-router-dom"
+import ReportConflictIcon from "./ReportConflictIcon"
 
 const GQL_GET_REPORT_LIST = gql`
   query($reportQuery: ReportSearchQueryInput) {
@@ -68,8 +70,26 @@ const ReportCalendar = ({
         info.jsEvent.preventDefault()
       }}
       calendarComponentRef={calendarComponentRef}
+      eventRender={renderEvent}
     />
   )
+
+  function renderEvent(info) {
+    if (Report.hasPlanningConflicts(info.event.extendedProps)) {
+      let el
+      if (info.view.type === "listDay") {
+        el = info.el.querySelector(".fc-list-item-title > a")
+      } else {
+        el = info.el.querySelector(".fc-title")
+        if (el) {
+          el.style.display = "inline-flex"
+          el.style.alignItems = "center"
+        }
+      }
+
+      el && ReactDOM.render(<ReportConflictIcon text={info.event.title} />, el)
+    }
+  }
 
   function getEvents(fetchInfo, successCallback, failureCallback) {
     const reportQuery = Object.assign({}, queryParams, {
