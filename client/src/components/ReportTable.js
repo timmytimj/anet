@@ -10,6 +10,7 @@ import moment from "moment"
 import PropTypes from "prop-types"
 import React, { useEffect, useRef, useState } from "react"
 import { Table } from "react-bootstrap"
+import ReportConflictIcon from "./ReportConflictIcon"
 
 const GQL_GET_REPORT_LIST = gql`
   query($reportQuery: ReportSearchQueryInput) {
@@ -180,9 +181,16 @@ const ReportTable = ({
                 </td>
                 {showStatus && <td>{report.state}</td>}
                 <td>
-                  {moment(report.engagementDate).format(
-                    Report.getEngagementDateFormat()
-                  )}
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <span>
+                      {moment(report.engagementDate).format(
+                        Report.getEngagementDateFormat()
+                      )}
+                    </span>
+                    {Report.hasPlanningConflicts(report) && (
+                      <ReportConflictIcon large />
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
