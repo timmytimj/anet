@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -109,6 +110,45 @@ public class ReportResource {
       throw new WebApplicationException("Report not found", Status.NOT_FOUND);
     }
     return r;
+  }
+
+  /**
+   * Find conflicted meetings of a person between entered dates
+   */
+  @GraphQLQuery(name = "conflictedReportsOfPerson")
+  public AnetBeanList<Report> conflictedReportsOfPerson(
+      @GraphQLRootContext Map<String, Object> context, @GraphQLArgument(name = "uuid") String uuid,
+      @GraphQLArgument(name = "engagementDateStart") Instant pEngagementDateStart,
+      @GraphQLArgument(name = "duration") Integer pDuration) {
+
+    Person p = AnetObjectEngine.getInstance().getPersonDao().getByUuid(uuid);
+
+    if (p == null) {
+      throw new WebApplicationException("Person not found", Status.NOT_FOUND);
+    }
+
+    // Check if parameter has a valid engagement date ,
+    // otherwise it is useless to control overlapping times.
+    if (pEngagementDateStart == null) {
+      return new AnetBeanList<>();
+    }
+
+    Instant engagementStartDate = pEngagementDateStart;
+    Instant engagementEndDate =
+        engagementStartDate.plus(pDuration != null ? pDuration : 0, ChronoUnit.MINUTES);
+
+    ReportSearchQuery checkConflictedReportsQuery = new ReportSearchQuery();
+    checkConflictedReportsQuery.setAttendeeUuid(uuid);
+    checkConflictedReportsQuery.setUser(DaoUtils.getUserFromContext(context));
+    checkConflictedReportsQuery.setCheckConflictedReports(true);
+    checkConflictedReportsQuery.setEngagementDateStart(engagementStartDate);
+    checkConflictedReportsQuery.setEngagementDateEnd(engagementEndDate);
+
+    AnetBeanList<Report> conflictedReports =
+        AnetObjectEngine.getInstance().getReportDao().search(checkConflictedReportsQuery);
+
+
+    return conflictedReports;
   }
 
   @GraphQLMutation(name = "createReport")
