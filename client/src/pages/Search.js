@@ -89,17 +89,6 @@ const GQL_GET_PERSON_LIST = gql`
       list {
         uuid
         name
-        attendedReports(
-          query: {
-            pageSize: 0 # retrieve all
-          }
-        ) {
-          list {
-            uuid
-            engagementDate
-            duration
-          }
-        }
         rank
         role
         emailAddress

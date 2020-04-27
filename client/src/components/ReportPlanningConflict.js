@@ -13,8 +13,8 @@ import { IconNames } from "@blueprintjs/icons"
 import PropTypes from "prop-types"
 import React from "react"
 import { gql } from "apollo-boost"
-import { Person, Report } from "../models"
-import API from "../../platform/web-dev/api"
+import { Person, Report } from "models"
+import API from "api"
 import LinkTo from "./LinkTo"
 
 const GQL_GET_CONFLICTS = gql`
