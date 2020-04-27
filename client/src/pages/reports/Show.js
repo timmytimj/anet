@@ -628,7 +628,11 @@ const BaseReportShow = ({ currentUser, setSearchQuery, pageDispatchers }) => {
                 />
               </Fieldset>
               <Fieldset title="Meeting attendees">
-                <AttendeesTable attendees={report.attendees} disabled />
+                <AttendeesTable
+                  attendees={report.attendees}
+                  report={report}
+                  disabled
+                />
               </Fieldset>
               <Fieldset title={Settings.fields.task.subLevel.longLabel}>
                 <TaskTable
