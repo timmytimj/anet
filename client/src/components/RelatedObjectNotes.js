@@ -7,7 +7,11 @@ import AppContext from "components/AppContext"
 import ConfirmDelete from "components/ConfirmDelete"
 import Pie from "components/graphs/Pie"
 import LinkTo from "components/LinkTo"
-import Model, { NOTE_TYPE } from "components/Model"
+import Messages from "components/Messages"
+import Model, {
+  INVISIBLE_CUSTOM_FIELDS_FIELD,
+  NOTE_TYPE
+} from "components/Model"
 import RelatedObjectNoteModal from "components/RelatedObjectNoteModal"
 import { JSONPath } from "jsonpath-plus"
 import _isEmpty from "lodash/isEmpty"
@@ -33,6 +37,13 @@ const GQL_DELETE_NOTE = gql`
 
 export { GRAPHQL_NOTES_FIELDS } from "components/Model"
 
+export const EXCLUDED_ASSESSMENT_FIELDS = [
+  "__recurrence",
+  "__periodStart",
+  "__relatedObjectType",
+  INVISIBLE_CUSTOM_FIELDS_FIELD
+]
+
 const BaseRelatedObjectNotes = ({
   currentUser,
   notesElemId,
@@ -47,9 +58,7 @@ const BaseRelatedObjectNotes = ({
     utils.treatFunctionsAsEqual
   )
 
-  // TODO: display somewhere the error state
-  // eslint-disable-next-line no-unused-vars
-  const [error, setError] = useState(null) // lgtm[js/unused-local-variable]
+  const [error, setError] = useState(null)
   const [hidden, setHidden] = useState(true)
   const [
     showRelatedObjectNoteModalKey,
@@ -88,7 +97,7 @@ const BaseRelatedObjectNotes = ({
     )
     const partnerAssessmentsSummary = partnerAssessments.reduce(
       (counters, assessment) => {
-        const assessmentJson = JSON.parse(assessment.text)
+        const assessmentJson = utils.parseJsonSafe(assessment.text)
 
         questions.forEach(question => {
           if (!counters[question.id]) counters[question.id] = {}
@@ -138,6 +147,7 @@ const BaseRelatedObjectNotes = ({
             <Icon icon={IconNames.DOUBLE_CHEVRON_RIGHT} />
           </Button>
         </div>
+        <Messages error={error} />
         <br />
         <div
           style={{
@@ -173,6 +183,7 @@ const BaseRelatedObjectNotes = ({
             type: noteType,
             noteRelatedObjects: [{ ...relatedObject }]
           }}
+          currentObject={relatedObject}
           questions={questions}
           showModal={showRelatedObjectNoteModalKey === "new"}
           onCancel={cancelRelatedObjectNoteModal}
@@ -243,7 +254,8 @@ const BaseRelatedObjectNotes = ({
               note.type !== NOTE_TYPE.ASSESSMENT &&
               (byMe || currentUser.isAdmin())
             const isJson = note.type !== NOTE_TYPE.FREE_TEXT
-            const jsonFields = isJson && note.text ? JSON.parse(note.text) : {}
+            const jsonFields =
+              isJson && note.text ? utils.parseJsonSafe(note.text) : {}
             const noteText = isJson
               ? jsonFields.text
               : parseHtmlWithLinkTo(note.text)
@@ -284,10 +296,12 @@ const BaseRelatedObjectNotes = ({
                       </Button>
                       <RelatedObjectNoteModal
                         note={note}
+                        currentObject={relatedObject}
                         questions={questions}
                         showModal={showRelatedObjectNoteModalKey === note.uuid}
                         onCancel={cancelRelatedObjectNoteModal}
                         onSuccess={hideEditRelatedObjectNoteModal}
+                        onDelete={hideDeleteRelatedObjectNoteModal}
                       />
                       <ConfirmDelete
                         onConfirmDelete={() => deleteNote(note.uuid)}
@@ -346,7 +360,9 @@ const BaseRelatedObjectNotes = ({
                           </u>
                         </h4>
                         {Object.keys(jsonFields)
-                          .filter(field => field !== "text")
+                          .filter(
+                            field => !EXCLUDED_ASSESSMENT_FIELDS.includes(field)
+                          )
                           .map(field => (
                             <p key={field}>
                               <i>{field}</i>: <b>{jsonFields[field]}</b>
@@ -400,11 +416,19 @@ const BaseRelatedObjectNotes = ({
 
   function hideEditRelatedObjectNoteModal(note) {
     const newNotes = notes.filter(item => item.uuid !== note.uuid) // remove old note
-    newNotes.unshift(note) // add updated note at the front
+    const roUuids = note?.noteRelatedObjects.map(nro => nro.relatedObjectUuid)
+    if (roUuids?.includes(relatedObject?.relatedObjectUuid)) {
+      newNotes.unshift(note) // add updated note at the front
+    }
     setError(null)
     setShowRelatedObjectNoteModalKey(null)
     setNoteType(null)
     setNotes(newNotes)
+  }
+
+  function hideDeleteRelatedObjectNoteModal(uuid) {
+    setShowRelatedObjectNoteModalKey(null)
+    deleteNote(uuid)
   }
 
   function deleteNote(uuid) {
@@ -422,11 +446,8 @@ const BaseRelatedObjectNotes = ({
 BaseRelatedObjectNotes.propTypes = {
   currentUser: PropTypes.instanceOf(Person),
   notesElemId: PropTypes.string.isRequired,
-  notes: PropTypes.arrayOf(Model.notePropTypes),
-  relatedObject: PropTypes.shape({
-    relatedObjectType: PropTypes.string.isRequired,
-    relatedObjectUuid: PropTypes.string.isRequired
-  }),
+  notes: PropTypes.arrayOf(Model.notePropType),
+  relatedObject: Model.relatedObjectPropType,
   relatedObjectValue: PropTypes.shape({
     role: PropTypes.string.isRequired,
     rank: PropTypes.string.isRequired,

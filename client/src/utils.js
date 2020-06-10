@@ -151,6 +151,23 @@ export default {
     } else {
       location.hash = hash
     }
+  },
+
+  parseJsonSafe: function(jsonString) {
+    // TODO: Improve error handling so that consuming widgets can display an error w/o crashing
+    try {
+      return JSON.parse(jsonString)
+    } catch (error) {
+      console.error(`unable to parse JSON: ${jsonString}`)
+    }
+    return null
+  },
+
+  arrayOfNumbers: function(arr) {
+    return (
+      arr &&
+      arr.filter(n => !isNaN(parseFloat(n)) && isFinite(n)).map(n => Number(n))
+    )
   }
 }
 

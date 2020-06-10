@@ -91,7 +91,6 @@ const OrganizationalChart = ({
   const [personnelDepth, setPersonnelDepth] = useState(5)
   const history = useHistory()
   const canvasRef = useRef(null)
-  const svgRef = useRef(null)
   const linkRef = useRef(null)
   const nodeRef = useRef(null)
   const tree = useRef(d3.tree())
@@ -383,7 +382,6 @@ const OrganizationalChart = ({
 
   return (
     <SVGCanvas
-      ref={svgRef}
       width={width}
       height={height}
       exportTitle={`${data.shortName} organization chart`}
