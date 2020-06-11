@@ -32,7 +32,7 @@ const GQL_UPDATE_LOCATION = gql`
 `
 
 const LocationForm = ({ edit, title, initialValues }) => {
-  const { currentUser } = useContext(AppContext)
+  const { currentUser, loadAppData } = useContext(AppContext)
   const history = useHistory()
   const [error, setError] = useState(null)
   const canEditName =
@@ -244,6 +244,8 @@ const LocationForm = ({ edit, title, initialValues }) => {
         ? response[operation].uuid
         : initialValues.uuid
     })
+    // After successful submit, reload all locations data
+    loadAppData()
     // After successful submit, reset the form in order to make sure the dirty
     // prop is also reset (otherwise we would get a blocking navigation warning)
     form.resetForm()
