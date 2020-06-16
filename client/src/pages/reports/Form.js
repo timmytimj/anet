@@ -13,7 +13,6 @@ import AdvancedSingleSelect from "components/advancedSelectWidget/AdvancedSingle
 import AppContext from "components/AppContext"
 import InstantAssessmentsContainerField from "components/assessments/InstantAssessmentsContainerField"
 import ConfirmDelete from "components/ConfirmDelete"
-import CustomDateInput from "components/CustomDateInput"
 import {
   CustomFieldsContainer,
   customFieldsJSONString
@@ -45,11 +44,12 @@ import _isEmpty from "lodash/isEmpty"
 import _upperFirst from "lodash/upperFirst"
 import { AuthorizationGroup, Location, Person, Report, Tag, Task } from "models"
 import moment from "moment"
+import EngagementDateFormPartial from "pages/reports/EngagementDateFormPartial"
 import { RECURRENCE_TYPE } from "periodUtils"
 import pluralize from "pluralize"
 import PropTypes from "prop-types"
 import React, { useContext, useEffect, useState } from "react"
-import { Button, Checkbox, Collapse, HelpBlock } from "react-bootstrap"
+import { Button, Checkbox, Collapse } from "react-bootstrap"
 import { connect } from "react-redux"
 import { useHistory } from "react-router-dom"
 import { toast } from "react-toastify"
@@ -541,45 +541,14 @@ const ReportForm = ({
                   className="meeting-goal"
                 />
 
-                <FastField
-                  name="engagementDate"
-                  component={FieldHelper.SpecialField}
-                  onChange={value => {
-                    setFieldTouched("engagementDate", true, false) // onBlur doesn't work when selecting a date
-                    setFieldValue("engagementDate", value, true)
-                  }}
-                  onBlur={() => setFieldTouched("engagementDate")}
-                  widget={
-                    <CustomDateInput
-                      id="engagementDate"
-                      withTime={Settings.engagementsIncludeTimeAndDuration}
-                    />
-                  }
-                >
-                  {isFutureEngagement && (
-                    <HelpBlock>
-                      <span className="text-success">
-                        This will create a planned engagement
-                      </span>
-                    </HelpBlock>
-                  )}
-                </FastField>
-
-                {Settings.engagementsIncludeTimeAndDuration && (
-                  <FastField
-                    name="duration"
-                    label="Duration (minutes)"
-                    component={FieldHelper.InputField}
-                    onChange={event => {
-                      const safeVal =
-                        (event.target.value || "").replace(/[^0-9]+/g, "") ||
-                        null
-                      setFieldTouched("duration", true, false)
-                      setFieldValue("duration", safeVal, false)
-                      validateFieldDebounced("duration")
-                    }}
-                  />
-                )}
+                <EngagementDateFormPartial
+                  setFieldValue={setFieldValue}
+                  setFieldTouched={setFieldTouched}
+                  validateFieldDebounced={validateFieldDebounced}
+                  values={values}
+                  initialValues={initialValues}
+                  edit={edit}
+                />
 
                 <FastField
                   name="location"
