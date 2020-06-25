@@ -271,8 +271,14 @@ public abstract class AbstractReportSearcher extends AbstractSearcher<Report, Re
       }
     }
 
+    if (query.getWithinPolygon() != null) {
+      addWithinPolygon(query);
+    }
+
     addOrderByClauses(qb, query);
   }
+
+  protected abstract void addWithinPolygon(ReportSearchQuery query);
 
   protected abstract void addBatchClause(ReportSearchQuery query);
 
