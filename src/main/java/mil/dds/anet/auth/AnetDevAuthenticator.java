@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import mil.dds.anet.AnetObjectEngine;
 import mil.dds.anet.beans.Person;
-import mil.dds.anet.beans.Person.PersonStatus;
 import mil.dds.anet.beans.Person.Role;
 import mil.dds.anet.database.PersonDao;
 
@@ -41,7 +40,7 @@ public class AnetDevAuthenticator implements Authenticator<BasicCredentials, Per
         newUser.setName(credentials.getUsername());
         newUser.setRole(Role.ADVISOR);
         newUser.setDomainUsername(credentials.getUsername());
-        newUser.setStatus(PersonStatus.NEW_USER);
+        newUser.setPendingVerification(true);
         newUser = dao.insert(newUser);
 
         return Optional.of(newUser);

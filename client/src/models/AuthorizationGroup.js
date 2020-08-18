@@ -13,11 +13,6 @@ export default class AuthorizationGroup extends Model {
     return "Authorization Group"
   }
 
-  static STATUS = {
-    ACTIVE: "ACTIVE",
-    INACTIVE: "INACTIVE"
-  }
-
   static yupSchema = yup
     .object()
     .shape({

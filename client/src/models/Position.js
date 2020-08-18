@@ -17,11 +17,6 @@ export default class Position extends Model {
   static getInstanceName = "position"
   static relatedObjectType = "positions"
 
-  static STATUS = {
-    ACTIVE: "ACTIVE",
-    INACTIVE: "INACTIVE"
-  }
-
   static TYPE = {
     ADVISOR: "ADVISOR",
     PRINCIPAL: "PRINCIPAL",

@@ -10,11 +10,6 @@ export default class Organization extends Model {
   static getInstanceName = "organization"
   static relatedObjectType = "organizations"
 
-  static STATUS = {
-    ACTIVE: "ACTIVE",
-    INACTIVE: "INACTIVE"
-  }
-
   static TYPE = {
     ADVISOR_ORG: "ADVISOR_ORG",
     PRINCIPAL_ORG: "PRINCIPAL_ORG"

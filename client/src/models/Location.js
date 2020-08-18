@@ -9,11 +9,6 @@ export default class Location extends Model {
   static getInstanceName = "location"
   static relatedObjectType = "locations"
 
-  static STATUS = {
-    ACTIVE: "ACTIVE",
-    INACTIVE: "INACTIVE"
-  }
-
   static APPROVAL_STEP_TYPE = {
     PLANNING_APPROVAL: "PLANNING_APPROVAL",
     REPORT_APPROVAL: "REPORT_APPROVAL"
