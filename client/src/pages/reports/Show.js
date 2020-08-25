@@ -36,7 +36,7 @@ import _upperFirst from "lodash/upperFirst"
 import { Comment, Person, Position, Report, Task } from "models"
 import moment from "moment"
 // import ReportPrint from "pages/reports/Print"
-import ReportPrintEmotion from "pages/reports/PrintEmotion"
+import ReportPrint from "pages/reports/Print"
 import pluralize from "pluralize"
 import PropTypes from "prop-types"
 import React, { useContext, useState } from "react"
@@ -278,7 +278,7 @@ const ReportShow = ({ setSearchQuery, pageDispatchers }) => {
   const [saveSuccess, setSaveSuccess] = useState(null)
   const [saveError, setSaveError] = useState(null)
   const [showEmailModal, setShowEmailModal] = useState(false)
-  const [shouldPrint, setShouldPrint] = useState(false)
+  const [shouldPrint, setShouldPrint] = useState(true)
   const { uuid } = useParams()
   const { loading, error, data, refetch } = API.useApiQuery(GQL_GET_REPORT, {
     uuid
@@ -375,7 +375,7 @@ const ReportShow = ({ setSearchQuery, pageDispatchers }) => {
       {({ isSubmitting, setSubmitting, isValid, setFieldValue, values }) => {
         if (report && shouldPrint) {
           return (
-            <ReportPrintEmotion
+            <ReportPrint
               report={report}
               setPrintDone={() => setShouldPrint(false)}
             />
