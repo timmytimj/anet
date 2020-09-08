@@ -21,7 +21,8 @@ const SecurityBanner = () => {
       className="banner"
       style={{ ...css, background: appSettings[SETTING_KEY_COLOR] }}
     >
-      {appSettings[SETTING_KEY_TEXT]} || {currentUser.name}{" "}
+      {appSettings[SETTING_KEY_TEXT]} || {currentUser.name}
+      {"Hello Fast Refresh  "}
       <LinkTo
         modelType="Person"
         model={currentUser}

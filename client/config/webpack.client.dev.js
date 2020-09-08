@@ -1,5 +1,6 @@
 const merge = require("webpack-merge")
 const webpack = require("webpack")
+const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
 const common = require("./webpack.common.js")
 const paths = require("./paths")
@@ -29,6 +30,27 @@ module.exports = merge.merge(common.clientConfig, {
       }
     ]
   },
+  module: {
+    rules: [
+      {
+        test: /\.[jt]sx?$/,
+        exclude: /node_modules/,
+        use: [
+          // ... other loaders
+          {
+            loader: require.resolve("babel-loader"),
+            options: {
+              // ... other options
+              plugins: [
+                // ... other plugins
+                require.resolve("react-refresh/babel")
+              ].filter(Boolean)
+            }
+          }
+        ]
+      }
+    ]
+  },
   plugins: [
     new webpack.DefinePlugin({
       "process.env.NODE_ENV": JSON.stringify("development")
@@ -40,6 +62,7 @@ module.exports = merge.merge(common.clientConfig, {
       template: "public/index.hbs"
     }),
     new webpack.NamedModulesPlugin(),
-    new webpack.HotModuleReplacementPlugin()
+    new webpack.HotModuleReplacementPlugin(),
+    new ReactRefreshWebpackPlugin()
   ]
 })

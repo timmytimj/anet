@@ -25,6 +25,7 @@
     "@babel/preset-react": "7.10.4",
     "@babel/register": "7.11.5",
     "@babel/runtime": "7.11.2",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.2",
     "@storybook/addon-actions": "5.3.21",
     "@storybook/react": "5.3.21",
     "@wdio/browserstack-service": "6.4.0",
@@ -82,6 +83,7 @@
     "postcss-flexbugs-fixes": "4.2.1",
     "postcss-loader": "3.0.0",
     "prettier": "2.1.1",
+    "react-refresh": "^0.8.3",
     "react-test-renderer": "16.13.1",
     "selenium-webdriver": "4.0.0-alpha.7",
     "style-loader": "1.2.1",
@@ -365,6 +367,7 @@
   },
   "prettier": {
     "arrowParens": "avoid",
-    "semi": false
+    "semi": false,
+    "trailingComma": "none"
   }
 }
