@@ -27,6 +27,8 @@
     "@babel/runtime": "7.11.2",
     "@storybook/addon-actions": "5.3.21",
     "@storybook/react": "5.3.21",
+    "@testing-library/jest-dom": "5.11.4",
+    "@testing-library/react": "11.0.2",
     "@wdio/browserstack-service": "6.4.0",
     "@wdio/cli": "6.4.5",
     "@wdio/local-runner": "6.4.5",
