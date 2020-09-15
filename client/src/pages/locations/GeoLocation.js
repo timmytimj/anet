@@ -8,7 +8,6 @@ import {
 import * as FieldHelper from "components/FieldHelper"
 import { Field } from "formik"
 import {
-  convertLatLngToMGRS,
   convertMGRSToLatLng,
   parseCoordinate
 } from "geoUtils"
@@ -26,6 +25,7 @@ const MGRS_LABEL = "MGRS Coordinate"
 const LAT_LON_LABEL = "Latitude, Longitude"
 
 const GeoLocation = ({
+  displayedCoordinate,
   lat,
   lng,
   editable,
@@ -33,8 +33,7 @@ const GeoLocation = ({
   setFieldTouched,
   isSubmitting,
   displayType,
-  locationFormat,
-  values
+  locationFormat
 }) => {
   let label = LAT_LON_LABEL
   let CoordinatesFormField = LatLonFormField
@@ -47,7 +46,7 @@ const GeoLocation = ({
     const humanValue = (
       <div style={{ display: "flex", alignItems: "center" }}>
         <CoordinatesFormField lat={lat} lng={lng} />
-        <AllFormatsInfo lat={lat} lng={lng} />
+        <AllFormatsInfo lat={lat} lng={lng} displayedCoordinate={displayedCoordinate} />
       </div>
     )
 
@@ -68,13 +67,13 @@ const GeoLocation = ({
 
   return (
     <CoordinatesFormField
+      displayedCoordinate={displayedCoordinate}
       lat={lat}
       lng={lng}
       editable
       setFieldValue={setFieldValue}
       setFieldTouched={setFieldTouched}
       isSubmitting={isSubmitting}
-      values={values}
     />
   )
 }
@@ -88,6 +87,7 @@ function fnRequiredWhenEditable(props, propName, componentName) {
 }
 
 GeoLocation.propTypes = {
+  displayedCoordinate: PropTypes.string,
   lat: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   lng: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   editable: PropTypes.bool,
@@ -98,11 +98,11 @@ GeoLocation.propTypes = {
     GEO_LOCATION_DISPLAY_TYPE.FORM_FIELD,
     GEO_LOCATION_DISPLAY_TYPE.GENERIC
   ]),
-  locationFormat: PropTypes.string,
-  values: PropTypes.object
+  locationFormat: PropTypes.string
 }
 
 GeoLocation.defaultProps = {
+  displayedCoordinate: "",
   lat: null,
   lng: null,
   editable: false,
@@ -116,16 +116,16 @@ export default GeoLocation
 /* =========================== MGRSFormField ================================ */
 
 const MGRSFormField = ({
+  displayedCoordinate,
   lat,
   lng,
   editable,
   setFieldValue,
   setFieldTouched,
-  isSubmitting,
-  values
+  isSubmitting
 }) => {
   if (!editable) {
-    return <span>{convertLatLngToMGRS(lat, lng) || "?"}</span>
+    return <span>{displayedCoordinate || "?"}</span>
   }
 
   return (
@@ -140,16 +140,15 @@ const MGRSFormField = ({
             name="displayedCoordinate"
             component={FieldHelper.InputFieldNoLabel}
             onChange={e => updateFields(e.target.value)}
-            onBlur={e => {
-              updateFields(e.target.value)
-            }}
+            onBlur={e => updateFields(e.target.value)}
           />
         </Col>
         <CoordinateActionButtons
+          displayedCoordinate={displayedCoordinate}
           lat={lat}
           lng={lng}
           isSubmitting={isSubmitting}
-          disabled={!values.displayedCoordinate}
+          disabled={!displayedCoordinate}
           onClear={() => {
             setFieldValue("displayedCoordinate", null)
             setFieldValue("lat", null, false)
@@ -159,7 +158,6 @@ const MGRSFormField = ({
       </Col>
     </FormGroup>
   )
-
   function updateFields(val) {
     setFieldTouched("displayedCoordinate", true, false)
     const newLatLng = convertMGRSToLatLng(val)
@@ -170,16 +168,17 @@ const MGRSFormField = ({
 }
 
 MGRSFormField.propTypes = {
+  displayedCoordinate: PropTypes.string,
   lat: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   lng: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   editable: PropTypes.bool,
   setFieldValue: fnRequiredWhenEditable,
   setFieldTouched: fnRequiredWhenEditable,
-  isSubmitting: PropTypes.bool,
-  values: PropTypes.object
+  isSubmitting: PropTypes.bool
 }
 
 MGRSFormField.defaultProps = {
+  displayedCoordinate: "",
   lat: null,
   lng: null,
   editable: false,
@@ -189,6 +188,7 @@ MGRSFormField.defaultProps = {
 /* ========================= LatLonFormField ================================ */
 
 const LatLonFormField = ({
+  displayedCoordinate,
   lat,
   lng,
   editable,
@@ -258,6 +258,7 @@ const LatLonFormField = ({
 }
 
 LatLonFormField.propTypes = {
+  displayedCoordinate: PropTypes.string,
   lat: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   lng: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   editable: PropTypes.bool,
@@ -267,6 +268,7 @@ LatLonFormField.propTypes = {
 }
 
 LatLonFormField.defaultProps = {
+  displayedCoordinate: "",
   lat: null,
   lng: null,
   editable: false,
@@ -276,6 +278,7 @@ LatLonFormField.defaultProps = {
 /* ======================= CoordinateActionButtons ============================ */
 
 const CoordinateActionButtons = ({
+  displayedCoordinate,
   lat,
   lng,
   onClear,
@@ -294,12 +297,13 @@ const CoordinateActionButtons = ({
           disabled={isSubmitting || disabled}
         />
       </Tooltip>
-      <AllFormatsInfo lat={lat} lng={lng} inForm />
+      <AllFormatsInfo lat={lat} lng={lng} displayedCoordinate={displayedCoordinate} inForm />
     </Col>
   )
 }
 
 CoordinateActionButtons.propTypes = {
+  displayedCoordinate: PropTypes.string,
   lat: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   lng: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   onClear: PropTypes.func.isRequired,
@@ -308,6 +312,7 @@ CoordinateActionButtons.propTypes = {
 }
 
 CoordinateActionButtons.defaultProps = {
+  displayedCoordinate: "",
   lat: null,
   lng: null,
   disabled: true
@@ -315,7 +320,7 @@ CoordinateActionButtons.defaultProps = {
 
 /* ======================= AllFormatsInfo ============================ */
 
-const AllFormatsInfo = ({ lat, lng, inForm }) => {
+const AllFormatsInfo = ({ displayedCoordinate, lat, lng, inForm }) => {
   if (!inForm && ((!lat && lat !== 0) || (!lng && lng !== 0))) {
     return null
   }
@@ -341,7 +346,7 @@ const AllFormatsInfo = ({ lat, lng, inForm }) => {
               <tr>
                 <td style={{ whiteSpace: "nowrap" }}>{MGRS_LABEL}</td>
                 <td>
-                  <MGRSFormField lat={lat} lng={lng} />
+                  <MGRSFormField displayedCoordinate={displayedCoordinate} />
                 </td>
               </tr>
             </tbody>
@@ -368,12 +373,14 @@ const AllFormatsInfo = ({ lat, lng, inForm }) => {
 }
 
 AllFormatsInfo.propTypes = {
+  displayedCoordinate: PropTypes.string,
   lat: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   lng: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   inForm: PropTypes.bool
 }
 
 AllFormatsInfo.defaultProps = {
+  displayedCoordinate: "",
   lat: null,
   lng: null,
   inForm: false

@@ -158,10 +158,10 @@ const LocationForm = ({ edit, title, initialValues }) => {
                   editable
                   lat={values.lat}
                   lng={values.lng}
+                  displayedCoordinate={values.displayedCoordinate}
                   isSubmitting={isSubmitting}
                   setFieldValue={setFieldValue}
                   setFieldTouched={setFieldTouched}
-                  values={values}
                 />
               </Fieldset>
 
