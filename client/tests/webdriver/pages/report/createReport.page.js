@@ -2,6 +2,7 @@ import moment from "moment"
 import Page from "../page"
 
 const PAGE_URL = "/reports/new"
+const SHORT_WAIT_MS = 1000
 
 class CreateReport extends Page {
   get form() {
@@ -53,6 +54,16 @@ class CreateReport extends Page {
     return browser.$("#attendees-popover .table-responsive table")
   }
 
+  selectAttendeesFilter(filterIndex) {
+    const filter = browser.$(
+      `#attendees-popover .advanced-select-filters li:nth-child(${filterIndex}) button`
+    )
+    filter.waitForClickable()
+    filter.click()
+    browser.pause(SHORT_WAIT_MS) // give the advanced select some time to apply the filter
+    this.attendees.click()
+  }
+
   get submitButton() {
     return browser.$("#formBottomSubmit")
   }
@@ -94,10 +105,14 @@ class CreateReport extends Page {
     }
   }
 
-  selectAttendeeByName(name) {
+  selectAttendeeByName(name, filterIndex) {
     this.attendees.click()
-    // wait for attendess table loader to disappear
+    // wait for attendees table loader to disappear
     this.attendeesTable.waitForDisplayed()
+    if (filterIndex) {
+      // select filter
+      this.selectAttendeesFilter(filterIndex)
+    }
     let searchTerm = name
     if (searchTerm.startsWith("CIV") || searchTerm.startsWith("Maj")) {
       searchTerm = name.substr(name.indexOf(" ") + 1)
@@ -128,7 +143,7 @@ class CreateReport extends Page {
       this.engagementDate.click()
       this.tomorrow.waitForDisplayed()
       this.tomorrow.waitForClickable()
-      browser.pause(300) // wait for calendar popup animation
+      browser.pause(SHORT_WAIT_MS) // wait for calendar popup animation
       this.tomorrow.click()
       browser.waitUntil(() => !!browser.$("#engagementDate").getValue())
       this.hour.waitForDisplayed()
@@ -150,11 +165,11 @@ class CreateReport extends Page {
     }
 
     if (Array.isArray(fields.advisors) && fields.advisors.length) {
-      fields.advisors.forEach(at => this.selectAttendeeByName(at))
+      fields.advisors.forEach(at => this.selectAttendeeByName(at, 2))
     }
 
     if (Array.isArray(fields.principals) && fields.principals.length) {
-      fields.principals.forEach(at => this.selectAttendeeByName(at))
+      fields.principals.forEach(at => this.selectAttendeeByName(at, 2))
     }
   }
 
