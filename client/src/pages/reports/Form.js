@@ -1057,45 +1057,49 @@ const ReportForm = ({
                 </Collapse>
               </Fieldset>
 
-              <Fieldset
-                title="Attendees engagement assessments"
-                id="attendees-engagement-assessments"
-              >
-                <InstantAssessmentsContainerField
-                  entityType={Person}
-                  entities={values.attendees}
-                  entitiesInstantAssessmentsConfig={
-                    attendeesInstantAssessmentsConfig
-                  }
-                  parentFieldName={Report.ATTENDEES_ASSESSMENTS_PARENT_FIELD}
-                  formikProps={{
-                    setFieldTouched,
-                    setFieldValue,
-                    values,
-                    validateForm
-                  }}
-                />
-              </Fieldset>
+              {!isFutureEngagement && (
+                <Fieldset
+                  title="Attendees engagement assessments"
+                  id="attendees-engagement-assessments"
+                >
+                  <InstantAssessmentsContainerField
+                    entityType={Person}
+                    entities={values.attendees}
+                    entitiesInstantAssessmentsConfig={
+                      attendeesInstantAssessmentsConfig
+                    }
+                    parentFieldName={Report.ATTENDEES_ASSESSMENTS_PARENT_FIELD}
+                    formikProps={{
+                      setFieldTouched,
+                      setFieldValue,
+                      values,
+                      validateForm
+                    }}
+                  />
+                </Fieldset>
+              )}
 
-              <Fieldset
-                title={`${Settings.fields.task.subLevel.longLabel} engagement assessments`}
-                id="tasks-engagement-assessments"
-              >
-                <InstantAssessmentsContainerField
-                  entityType={Task}
-                  entities={values.tasks}
-                  entitiesInstantAssessmentsConfig={
-                    tasksInstantAssessmentsConfig
-                  }
-                  parentFieldName={Report.TASKS_ASSESSMENTS_PARENT_FIELD}
-                  formikProps={{
-                    setFieldTouched,
-                    setFieldValue,
-                    values,
-                    validateForm
-                  }}
-                />
-              </Fieldset>
+              {!isFutureEngagement && (
+                <Fieldset
+                  title={`${Settings.fields.task.subLevel.longLabel} engagement assessments`}
+                  id="tasks-engagement-assessments"
+                >
+                  <InstantAssessmentsContainerField
+                    entityType={Task}
+                    entities={values.tasks}
+                    entitiesInstantAssessmentsConfig={
+                      tasksInstantAssessmentsConfig
+                    }
+                    parentFieldName={Report.TASKS_ASSESSMENTS_PARENT_FIELD}
+                    formikProps={{
+                      setFieldTouched,
+                      setFieldValue,
+                      values,
+                      validateForm
+                    }}
+                  />
+                </Fieldset>
+              )}
 
               <div className="submit-buttons">
                 <div>
@@ -1258,6 +1262,7 @@ const ReportForm = ({
     return save(values, true)
       .then(response => onSubmitSuccess(response, values, form.resetForm))
       .catch(error => {
+        console.log("error", error)
         setSaveError(error)
         form.setSubmitting(false)
         jumpToTop()
@@ -1265,10 +1270,11 @@ const ReportForm = ({
   }
 
   function onSubmitSuccess(report, values, resetForm) {
+    console.log("onSubmitSuccess")
     const edit = isEditMode(values)
     // After successful submit, reset the form in order to make sure the dirty
     // prop is also reset (otherwise we would get a blocking navigation warning)
-    resetForm()
+    resetForm({ isSubmitting: true })
     if (!edit) {
       history.replace(Report.pathForEdit(report))
     }

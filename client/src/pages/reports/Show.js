@@ -360,8 +360,10 @@ const ReportShow = ({ setSearchQuery, pageDispatchers }) => {
     report.authorizationGroups && report.authorizationGroups.length > 0
 
   // Get initial tasks/attendees instant assessments values
-  report = Object.assign(report, report.getTasksEngagementAssessments())
-  report = Object.assign(report, report.getAttendeesEngagementAssessments())
+  if (report.isFuture()) {
+    report = Object.assign(report, report.getTasksEngagementAssessments())
+    report = Object.assign(report, report.getAttendeesEngagementAssessments())
+  }
 
   return (
     <Formik
@@ -666,34 +668,38 @@ const ReportShow = ({ setSearchQuery, pageDispatchers }) => {
                   />
                 </Fieldset>
               )}
-              <Fieldset
-                title="Attendees engagement assessments"
-                id="attendees-engagement-assessments"
-              >
-                <InstantAssessmentsContainerField
-                  entityType={Person}
-                  entities={values.attendees}
-                  parentFieldName={Report.ATTENDEES_ASSESSMENTS_PARENT_FIELD}
-                  formikProps={{
-                    values
-                  }}
-                  readonly
-                />
-              </Fieldset>
-              <Fieldset
-                title={`${Settings.fields.task.subLevel.longLabel} engagement assessments`}
-                id="tasks-engagement-assessments"
-              >
-                <InstantAssessmentsContainerField
-                  entityType={Task}
-                  entities={values.tasks}
-                  parentFieldName={Report.TASKS_ASSESSMENTS_PARENT_FIELD}
-                  formikProps={{
-                    values
-                  }}
-                  readonly
-                />
-              </Fieldset>
+              {!report.isFuture() && (
+                <Fieldset
+                  title="Attendees engagement assessments"
+                  id="attendees-engagement-assessments"
+                >
+                  <InstantAssessmentsContainerField
+                    entityType={Person}
+                    entities={values.attendees}
+                    parentFieldName={Report.ATTENDEES_ASSESSMENTS_PARENT_FIELD}
+                    formikProps={{
+                      values
+                    }}
+                    readonly
+                  />
+                </Fieldset>
+              )}
+              {!report.isFuture() && (
+                <Fieldset
+                  title={`${Settings.fields.task.subLevel.longLabel} engagement assessments`}
+                  id="tasks-engagement-assessments"
+                >
+                  <InstantAssessmentsContainerField
+                    entityType={Task}
+                    entities={values.tasks}
+                    parentFieldName={Report.TASKS_ASSESSMENTS_PARENT_FIELD}
+                    formikProps={{
+                      values
+                    }}
+                    readonly
+                  />
+                </Fieldset>
+              )}
               {report.showWorkflow() && (
                 <ReportFullWorkflow workflow={report.workflow} />
               )}
