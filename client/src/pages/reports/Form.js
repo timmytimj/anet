@@ -48,7 +48,7 @@ import moment from "moment"
 import { RECURRENCE_TYPE } from "periodUtils"
 import pluralize from "pluralize"
 import PropTypes from "prop-types"
-import React, { useContext, useEffect, useState } from "react"
+import React, { useContext, useEffect, useRef, useState } from "react"
 import { Button, Checkbox, Collapse, HelpBlock } from "react-bootstrap"
 import { connect } from "react-redux"
 import { useHistory } from "react-router-dom"
@@ -166,6 +166,7 @@ const ReportForm = ({
   initialValues,
   showSensitiveInfo: ssi
 }) => {
+  const previousValues = useRef(initialValues)
   const { currentUser } = useContext(AppContext)
   const history = useHistory()
   const [showSensitiveInfo, setShowSensitiveInfo] = useState(ssi)
@@ -326,7 +327,16 @@ const ReportForm = ({
     reportSchema = reportSchema.concat(attendeesInstantAssessmentsSchema)
   }
   let validateFieldDebounced
-
+  const changed = (name, keys, old, v) => {
+    for (var i = 0; i < keys.length; i++) {
+      const oldKey = JSON.stringify(old[keys[i]])
+      const newKey = JSON.stringify(v[keys[i]])
+      if (oldKey !== newKey) {
+        console.log("%c %s: %s has changed from %o to %o", "color: #c00", name, keys[i], oldKey, newKey)
+      }
+    }
+    return false
+  }
   return (
     <Formik
       enableReinitialize
@@ -346,6 +356,11 @@ const ReportForm = ({
         resetForm,
         setSubmitting
       }) => {
+        console.log("dirty:", dirty)
+        console.log("touched:", touched)
+        console.log("isSubmitting:", isSubmitting)
+        changed("changed values:", Object.keys(previousValues.current), previousValues.current, values)
+        previousValues.current = _cloneDeep(values)
         // need up-to-date copies of these in the autosave handler
         Object.assign(autoSaveSettings, { dirty, values, touched })
         if (!autoSaveSettings.timeoutId) {
