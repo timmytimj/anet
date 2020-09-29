@@ -713,49 +713,51 @@ const ReportForm = ({
                 />
               </Fieldset>
 
-              <Fieldset
-                title={Settings.fields.task.subLevel.longLabel}
-                className="tasks-selector"
-              >
-                <Field
-                  name="tasks"
-                  label={Settings.fields.task.subLevel.longLabel}
-                  component={FieldHelper.SpecialField}
-                  onChange={value => {
-                    // validation will be done by setFieldValue
-                    setFieldTouched("tasks", true, false) // onBlur doesn't work when selecting an option
-                    setFieldValue("tasks", value, true)
-                    setReportTasks(value)
-                  }}
-                  widget={
-                    <AdvancedMultiSelect
-                      fieldName="tasks"
-                      placeholder={`Search for ${tasksLabel}...`}
-                      value={values.tasks}
-                      renderSelected={
-                        <TaskTable
-                          id="tasks-tasks"
-                          tasks={values.tasks}
-                          showParent
-                          showDelete
-                          showDescription
-                          noTasksMessage={`No ${tasksLabel} selected; click in the efforts box to view your organization's efforts`}
-                        />
-                      }
-                      overlayColumns={[
-                        Settings.fields.task.subLevel.shortLabel,
-                        Settings.fields.task.topLevel.shortLabel
-                      ]}
-                      overlayRenderRow={TaskDetailedOverlayRow}
-                      filterDefs={tasksFilters}
-                      objectType={Task}
-                      queryParams={{ status: Task.STATUS.ACTIVE }}
-                      fields={Task.autocompleteQuery}
-                      addon={TASKS_ICON}
-                    />
-                  }
-                />
-              </Fieldset>
+              {!_isEmpty(tasksFilters) && (
+                <Fieldset
+                  title={Settings.fields.task.subLevel.longLabel}
+                  className="tasks-selector"
+                >
+                  <Field
+                    name="tasks"
+                    label={Settings.fields.task.subLevel.longLabel}
+                    component={FieldHelper.SpecialField}
+                    onChange={value => {
+                      // validation will be done by setFieldValue
+                      setFieldTouched("tasks", true, false) // onBlur doesn't work when selecting an option
+                      setFieldValue("tasks", value, true)
+                      setReportTasks(value)
+                    }}
+                    widget={
+                      <AdvancedMultiSelect
+                        fieldName="tasks"
+                        placeholder={`Search for ${tasksLabel}...`}
+                        value={values.tasks}
+                        renderSelected={
+                          <TaskTable
+                            id="tasks-tasks"
+                            tasks={values.tasks}
+                            showParent
+                            showDelete
+                            showDescription
+                            noTasksMessage={`No ${tasksLabel} selected; click in the efforts box to view your organization's efforts`}
+                          />
+                        }
+                        overlayColumns={[
+                          Settings.fields.task.subLevel.shortLabel,
+                          Settings.fields.task.topLevel.shortLabel
+                        ]}
+                        overlayRenderRow={TaskDetailedOverlayRow}
+                        filterDefs={tasksFilters}
+                        objectType={Task}
+                        queryParams={{ status: Task.STATUS.ACTIVE }}
+                        fields={Task.autocompleteQuery}
+                        addon={TASKS_ICON}
+                      />
+                    }
+                  />
+                </Fieldset>
+              )}
 
               {Settings.fields.report.customFields && (
                 <Fieldset title="Engagement information" id="custom-fields">
