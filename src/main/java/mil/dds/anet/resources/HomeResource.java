@@ -47,19 +47,18 @@ public class HomeResource {
   public IndexView reactIndex(@Auth Person user) {
     IndexView view = new IndexView("/views/index.ftl");
     view.setCurrentUser(user);
-
     view.setSecurityBannerText(engine.getAdminSetting(AdminSettingKeys.SECURITY_BANNER_TEXT));
     view.setSecurityBannerColor(engine.getAdminSetting(AdminSettingKeys.SECURITY_BANNER_COLOR));
     view.setDictionary(config.getDictionary());
-
+    view.setProjectVersion(config.getVersion());
     return view;
   }
 
   @GET
   @Timed
   @Path("/api/logout")
-  public void logout(@Auth Person user, @Context HttpServletRequest request,
-      @Context HttpServletResponse response) throws IOException, ServletException {
+  public void logout(@Context HttpServletRequest request, @Context HttpServletResponse response)
+      throws IOException, ServletException {
     // Terminate the session
     final HttpSession session = request.getSession(false);
     if (session != null) {
@@ -73,6 +72,7 @@ public class HomeResource {
     final String redirectUri =
         URLEncoder.encode(getBaseRequestUrl(requestlUrl), StandardCharsets.UTF_8.toString());
     // Redirect to Keycloak to log out
+    // scan:ignore — false positive, we only let Keycloak redirect back to the original request URI
     response.sendRedirect(String.format(
         "%s/realms/%s/protocol/openid-connect/logout?redirect_uri=%s",
         keycloakConfiguration.getAuthServerUrl(), keycloakConfiguration.getRealm(), redirectUri));
