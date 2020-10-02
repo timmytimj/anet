@@ -163,6 +163,10 @@ export default class Task extends Model {
     super(Model.fillObject(props, Task.yupSchema))
   }
 
+  isActive() {
+    return this.status === Task.STATUS.ACTIVE
+  }
+
   isTopLevelTask() {
     return _isEmpty(this.customFieldRef1)
   }
