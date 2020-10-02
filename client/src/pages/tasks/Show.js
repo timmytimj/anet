@@ -193,6 +193,8 @@ const TaskShow = ({ pageDispatchers }) => {
           position => currentUser.position.uuid === position.uuid
         )
       ))
+  console.log("Task Show")
+  console.dir(task)
   return (
     <Formik enableReinitialize initialValues={task}>
       {({ values }) => {
