@@ -1122,6 +1122,7 @@ const ReportForm = ({
                       objectDisplay={values.uuid}
                       bsStyle="warning"
                       buttonLabel={`Delete this ${getReportType(values)}`}
+                      disabled={isSubmitting}
                     />
                   )}
                   {/* Skip validation on save! */}
@@ -1245,7 +1246,7 @@ const ReportForm = ({
       .then(data => {
         // After successful delete, reset the form in order to make sure the dirty
         // prop is also reset (otherwise we would get a blocking navigation warning)
-        resetForm()
+        resetForm({ isSubmitting: true })
         history.push("/", { success: "Report deleted" })
       })
       .catch(error => {
