@@ -23,6 +23,7 @@ import {
   useBoilerplate
 } from "components/Page"
 import PlanningConflictForReport from "components/PlanningConflictForReport"
+import RecentUpdateWarning from "components/RecentUpdateWarning"
 import RelatedObjectNotes, {
   GRAPHQL_NOTES_FIELDS
 } from "components/RelatedObjectNotes"
@@ -391,7 +392,6 @@ const ReportShow = ({ setSearchQuery, pageDispatchers }) => {
         return (
           <div className="report-show">
             {renderEmailModal(values, setFieldValue)}
-
             <RelatedObjectNotes
               notes={report.notes}
               relatedObject={
@@ -403,7 +403,6 @@ const ReportShow = ({ setSearchQuery, pageDispatchers }) => {
               }
             />
             <Messages success={saveSuccess} error={saveError} />
-
             {report.isPublished() && (
               <Fieldset style={{ textAlign: "center" }}>
                 <h4 className="text-danger">This {reportType} is PUBLISHED.</h4>
@@ -416,7 +415,6 @@ const ReportShow = ({ setSearchQuery, pageDispatchers }) => {
                 </p>
               </Fieldset>
             )}
-
             {report.isRejected() && (
               <Fieldset style={{ textAlign: "center" }}>
                 <h4 className="text-danger">
@@ -431,7 +429,6 @@ const ReportShow = ({ setSearchQuery, pageDispatchers }) => {
                 </div>
               </Fieldset>
             )}
-
             {report.isDraft() && (
               <Fieldset style={{ textAlign: "center" }}>
                 <h4 className="text-danger">
@@ -448,7 +445,6 @@ const ReportShow = ({ setSearchQuery, pageDispatchers }) => {
                 </div>
               </Fieldset>
             )}
-
             {report.isPending() && (
               <Fieldset style={{ textAlign: "center" }}>
                 <h4 className="text-danger">
@@ -464,7 +460,6 @@ const ReportShow = ({ setSearchQuery, pageDispatchers }) => {
                 </div>
               </Fieldset>
             )}
-
             {report.isApproved() && (
               <Fieldset style={{ textAlign: "center" }}>
                 <h4 className="text-danger">This {reportType} is APPROVED.</h4>
@@ -491,7 +486,8 @@ const ReportShow = ({ setSearchQuery, pageDispatchers }) => {
                 )}
               </Fieldset>
             )}
-
+            {/* FIXME: updatedAt shoud be report.updatedAt, fix when available */}
+            <RecentUpdateWarning updatedAt={moment()} recencyAmount={10} />
             <Form className="form-horizontal" method="post">
               <Fieldset title={`Report #${uuid}`} action={action} />
               <Fieldset className="show-report-overview">
@@ -782,7 +778,6 @@ const ReportShow = ({ setSearchQuery, pageDispatchers }) => {
                   () => setSubmitting(false)
                 )}
             </Form>
-
             {currentUser.isAdmin() && (
               <div className="submit-buttons">
                 <div>

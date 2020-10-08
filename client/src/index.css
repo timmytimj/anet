@@ -336,7 +336,9 @@ li#search-nav .nav > li a {
 	left: 0;
 	z-index: 999;
 }
-
+.report-show {
+	position: relative;
+}
 .report-sub-form .form-group {
 	margin: 24px;
 }
