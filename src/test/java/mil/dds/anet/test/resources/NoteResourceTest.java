@@ -125,7 +125,7 @@ public class NoteResourceTest extends AbstractResourceTest {
     // Create test report
     final Report testReport = new Report();
     testReport.setIntent("a test report created by testDeleteDanglingReportNote");
-    testReport.setAttendees(Collections.singletonList(PersonTest.personToReportAuthor(admin)));
+    testReport.setReportPeople(Collections.singletonList(PersonTest.personToReportAuthor(admin)));
     final String testReportUuid = graphQLHelper.createObject(admin, "createReport", "report",
         "ReportInput", testReport, new TypeReference<GraphQlResponse<Report>>() {});
     assertThat(testReportUuid).isNotNull();
@@ -189,7 +189,7 @@ public class NoteResourceTest extends AbstractResourceTest {
     // Create test report
     final Report testReport = new Report();
     testReport.setIntent("a test report created by testDeleteDanglingReportTaskAssessment");
-    testReport.setAttendees(Collections.singletonList(PersonTest.personToReportAuthor(admin)));
+    testReport.setReportPeople(Collections.singletonList(PersonTest.personToReportAuthor(admin)));
     final String testReportUuid = graphQLHelper.createObject(admin, "createReport", "report",
         "ReportInput", testReport, new TypeReference<GraphQlResponse<Report>>() {});
     assertThat(testReportUuid).isNotNull();
@@ -268,7 +268,7 @@ public class NoteResourceTest extends AbstractResourceTest {
     // Create test report
     final Report testReport = new Report();
     testReport.setIntent("a test report created by testDeleteDanglingReportAttendeeAssessment");
-    testReport.setAttendees(Collections.singletonList(PersonTest.personToReportAuthor(admin)));
+    testReport.setReportPeople(Collections.singletonList(PersonTest.personToReportAuthor(admin)));
     final String testReportUuid = graphQLHelper.createObject(admin, "createReport", "report",
         "ReportInput", testReport, new TypeReference<GraphQlResponse<Report>>() {});
     assertThat(testReportUuid).isNotNull();
