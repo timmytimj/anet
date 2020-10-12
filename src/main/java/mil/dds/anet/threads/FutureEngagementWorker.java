@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandles;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import mil.dds.anet.AnetObjectEngine;
 import mil.dds.anet.beans.AnetEmail;
 import mil.dds.anet.beans.Report;
@@ -54,7 +55,8 @@ public class FutureEngagementWorker implements Runnable {
         FutureEngagementUpdated action = new FutureEngagementUpdated();
         action.setReport(r);
         email.setAction(action);
-        email.addToAddress(r.loadAuthor(context).join().getEmailAddress());
+        email.setToAddresses(r.loadAuthors(context).join().stream().map(rp -> rp.getEmailAddress())
+            .collect(Collectors.toList()));
         AnetEmailWorker.sendEmailAsync(email);
         dao.updateToDraftState(r);
       } catch (Exception e) {
