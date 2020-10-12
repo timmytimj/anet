@@ -1,4 +1,5 @@
 import AppContext from "components/AppContext"
+import { convertLatLngToMGRS } from "geoUtils"
 import {
   Control,
   CRS,
@@ -303,7 +304,16 @@ const BaseLeaflet = ({
             ReactDOM.render(
               <>
                 <b>{location.name}</b> @{" "}
-                <GeoLocation lat={location.lat} lng={location.lng} />
+                <GeoLocation
+                  coordinates={{
+                    lat: location.lat,
+                    lng: location.lng,
+                    displayedCoordinate: convertLatLngToMGRS(
+                      location.lat,
+                      location.lng
+                    )
+                  }}
+                />
               </>,
               e.popup.getContent()
             )
