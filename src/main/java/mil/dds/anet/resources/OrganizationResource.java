@@ -149,4 +149,50 @@ public class OrganizationResource {
     return dao.search(query);
   }
 
+  @GraphQLMutation(name = "mergeOrganization")
+  public Organization mergeOrganization(@GraphQLRootContext Map<String, Object> context,
+      @GraphQLArgument(name = "loserUuid") String loserUuid,
+      @GraphQLArgument(name = "winnerOrganization") Organization winnerOrganization) {
+    final Person user = DaoUtils.getUserFromContext(context);
+    AuthUtils.assertAdministrator(user);
+    final Organization existing = dao.getByUuid(loserUuid);
+    final Organization notUpdatedWinnerOrg = dao.getByUuid(winnerOrganization.getUuid());
+
+    if (winnerOrganization.getTasks() != null) {
+      logger.debug("Editing tasks for {}", winnerOrganization);
+      Utils.addRemoveElementsByUuid(existing.loadTasks(engine.getContext()).join(),
+          winnerOrganization.getTasks(),
+          newTask -> engine.getTaskDao().addTaskedOrganizationsToTask(winnerOrganization, newTask),
+          oldTaskUuid -> engine.getTaskDao().removeTaskedOrganizationsFromTask(winnerOrganization,
+              oldTaskUuid));
+
+      Utils.addRemoveElementsByUuid(notUpdatedWinnerOrg.loadTasks(engine.getContext()).join(),
+          winnerOrganization.getTasks(),
+          newTask -> engine.getTaskDao().addTaskedOrganizationsToTask(winnerOrganization, newTask),
+          oldTaskUuid -> engine.getTaskDao().removeTaskedOrganizationsFromTask(winnerOrganization,
+              oldTaskUuid));
+    }
+
+    doSuperUserUpdates(winnerOrganization, existing);
+    doSuperUserUpdates(winnerOrganization, notUpdatedWinnerOrg);
+
+    final int nr;
+    try {
+      nr = dao.update(winnerOrganization);
+    } catch (UnableToExecuteStatementException e) {
+      throw ResponseUtils.handleSqlException(e, "Duplicate identification code");
+    }
+
+    if (nr == 0) {
+      throw new WebApplicationException("Couldn't process organization update", Status.NOT_FOUND);
+    }
+
+    final int numRows = dao.mergeOrganization(existing, winnerOrganization);
+    if (numRows == 0) {
+      throw new WebApplicationException("Couldn't process merge operation", Status.NOT_FOUND);
+    }
+
+    AnetAuditLogger.log("Organization {} merged on {} by {}", existing, winnerOrganization, user);
+    return winnerOrganization;
+  }
 }

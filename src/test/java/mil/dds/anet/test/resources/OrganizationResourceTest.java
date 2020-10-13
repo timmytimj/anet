@@ -7,9 +7,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 import mil.dds.anet.beans.ApprovalStep;
 import mil.dds.anet.beans.ApprovalStep.ApprovalStepType;
 import mil.dds.anet.beans.Organization;
@@ -426,6 +429,54 @@ public class OrganizationResourceTest extends AbstractResourceTest {
           o);
       fail("Expected ForbiddenException");
     } catch (ForbiddenException expectedException) {
+    }
+  }
+
+  @Test
+  public void mergeOrganizationTest() {
+
+    Organization loserOrganization = new Organization();
+    loserOrganization.setShortName("TLO");
+    loserOrganization.setLongName("Test Loser Organization");
+    loserOrganization.setStatus(OrganizationStatus.ACTIVE);
+    loserOrganization.setType(OrganizationType.ADVISOR_ORG);
+    final String loserOrganizationUuid =
+        graphQLHelper.createObject(admin, "createOrganization", "organization", "OrganizationInput",
+            loserOrganization, new TypeReference<GraphQlResponse<Organization>>() {});
+    assertThat(loserOrganizationUuid).isNotNull();
+    loserOrganization = graphQLHelper.getObjectById(admin, "organization", FIELDS,
+        loserOrganizationUuid, new TypeReference<GraphQlResponse<Organization>>() {});
+    assertThat(loserOrganization.getUuid()).isNotNull();
+
+    Organization winnerOrganization = new Organization();
+    winnerOrganization.setShortName("TWO");
+    winnerOrganization.setLongName("Test Winner Organization");
+    winnerOrganization.setStatus(OrganizationStatus.ACTIVE);
+    winnerOrganization.setType(OrganizationType.ADVISOR_ORG);
+    final String winnerOrganizationUuid =
+        graphQLHelper.createObject(admin, "createOrganization", "organization", "OrganizationInput",
+            winnerOrganization, new TypeReference<GraphQlResponse<Organization>>() {});
+    assertThat(winnerOrganizationUuid).isNotNull();
+    winnerOrganization = graphQLHelper.getObjectById(admin, "organization", FIELDS,
+        winnerOrganizationUuid, new TypeReference<GraphQlResponse<Organization>>() {});
+    assertThat(winnerOrganization.getUuid()).isNotNull();
+
+    Map<String, Object> variables = new HashMap<>();
+    variables.put("loserUuid", loserOrganization.getUuid());
+    variables.put("winnerOrganization", winnerOrganization);
+    Organization organization = graphQLHelper.updateObject(admin,
+        "mutation ($loserUuid: String!, $winnerOrganization: OrganizationInput!) "
+            + "{ payload: mergeOrganization (loserUuid: $loserUuid, winnerOrganization: $winnerOrganization) { uuid }}",
+        variables, new TypeReference<GraphQlResponse<Organization>>() {});
+    assertThat(organization).isNotNull();
+    assertThat(organization.getUuid()).isNotNull();
+
+    // Assert that loser is gone.
+    try {
+      graphQLHelper.getObjectById(admin, "organization", FIELDS, loserOrganization.getUuid(),
+          new TypeReference<GraphQlResponse<Organization>>() {});
+      fail("Expected NotFoundException");
+    } catch (NotFoundException expectedException) {
     }
   }
 

@@ -138,6 +138,44 @@ public class OrganizationDao extends AnetBaseDao<Organization, OrganizationSearc
         .bind("parentOrgUuid", DaoUtils.getUuid(org.getParentOrg())).execute();
   }
 
+  @InTransaction
+  public int mergeOrganization(Organization existing, Organization winnerOrg) {
+    getDbHandle().createUpdate(
+        "/* updateNotesOfLoserOrganizationAfterMerge */ UPDATE \"noteRelatedObjects\" "
+            + "SET \"relatedObjectUuid\" = :relatedObjectUuid WHERE \"relatedObjectUuid\" = :oldRelatedObjectUuid")
+        .bind("oldRelatedObjectUuid", existing.getUuid())
+        .bind("relatedObjectUuid", winnerOrg.getUuid()).execute();
+
+    getDbHandle().createUpdate(
+        "/* updateChildOfLoserOrganizationInformationAfterMergeOrganization */ UPDATE \"organizations\" set \"parentOrgUuid\" = :winnerOrgUuid "
+            + "WHERE \"parentOrgUuid\" = :existingOrgUuid")
+        .bind("winnerOrgUuid", winnerOrg.getUuid()).bind("existingOrgUuid", existing.getUuid())
+        .execute();
+
+    getDbHandle().createUpdate(
+        "/* updateReportAdvisorOrganizationInformationAfterMergeOrganization */ UPDATE \"reports\" set \"advisorOrganizationUuid\" = :winnerOrgUuid "
+            + "WHERE \"advisorOrganizationUuid\" = :existingOrgUuid")
+        .bind("winnerOrgUuid", winnerOrg.getUuid()).bind("existingOrgUuid", existing.getUuid())
+        .execute();
+
+    getDbHandle().createUpdate(
+        "/* updateReportPrincipalOrganizationInformationAfterMergeOrganization */ UPDATE \"reports\" set \"principalOrganizationUuid\" = :winnerOrgUuid "
+            + "WHERE \"principalOrganizationUuid\" = :existingOrgUuid")
+        .bind("winnerOrgUuid", winnerOrg.getUuid()).bind("existingOrgUuid", existing.getUuid())
+        .execute();
+
+    getDbHandle().createUpdate(
+        "/* updatePositionOrganizationInformationAfterMergeOrganization */ UPDATE \"positions\" set \"organizationUuid\" = :winnerOrgUuid "
+            + "WHERE \"organizationUuid\" = :existingOrgUuid")
+        .bind("winnerOrgUuid", winnerOrg.getUuid()).bind("existingOrgUuid", existing.getUuid())
+        .execute();
+
+    // Delete old locations.
+    return getDbHandle()
+        .createUpdate("DELETE FROM \"organizations\" WHERE \"uuid\" = :organizationUuid")
+        .bind("organizationUuid", existing.getUuid()).execute();
+  }
+
   @Override
   public AnetBeanList<Organization> search(OrganizationSearchQuery query) {
     return AnetObjectEngine.getInstance().getSearcher().getOrganizationSearcher().runSearch(query);
