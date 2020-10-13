@@ -36,9 +36,8 @@ async function populateReport(report, user, args) {
   const location = await getRandomObject(user, "locations", {
     status: Location.STATUS.ACTIVE
   })
-  let author
   async function getAttendees() {
-    const attendees = []
+    const reportPeople = []
     const nbOfAdvisors = faker.random.number({ min: 1, max: 5 })
     let primary = true
     for (let i = 0; i < nbOfAdvisors; i++) {
@@ -50,14 +49,15 @@ async function populateReport(report, user, args) {
       )
       if (advisor) {
         advisor.primary = primary
+        advisor.attendee = true
+        advisor.author = false
         primary = false
-        attendees.push(advisor)
+        reportPeople.push(advisor)
       }
     }
     // Pick random advisor attendee as author
-    const n = faker.random.number({ min: 0, max: attendees.length - 1 })
-    author = Object.assign({}, attendees[n])
-    delete author.primary
+    const n = faker.random.number({ min: 0, max: reportPeople.length - 1 })
+    reportPeople[n].author = true
 
     const nbOfPrincipals = faker.random.number({ min: 1, max: 5 })
     primary = true
@@ -70,13 +70,15 @@ async function populateReport(report, user, args) {
       )
       if (principal) {
         principal.primary = primary
+        principal.attendee = true
+        principal.author = false
         primary = false
-        attendees.push(principal)
+        reportPeople.push(principal)
       }
     }
 
     const seenUuids = []
-    return attendees.filter(a => {
+    return reportPeople.filter(a => {
       if (seenUuids.includes(a.uuid)) {
         return false
       } else {
@@ -85,7 +87,7 @@ async function populateReport(report, user, args) {
       }
     })
   }
-  const attendees = await getAttendees()
+  const reportPeople = await getAttendees()
   async function getTasks() {
     const reportTasks = []
     const nbOfTasks = faker.random.number({ min: 1, max: 3 })
@@ -124,8 +126,7 @@ async function populateReport(report, user, args) {
       faker.random.arrayElement(["POSITIVE", "NEUTRAL", "NEGATIVE"]),
     atmosphereDetails: () => faker.lorem.sentence(),
     location,
-    author,
-    attendees,
+    reportPeople,
     tasks,
     reportText: () => faker.lorem.paragraphs(),
     nextSteps: () => faker.lorem.sentence(),
@@ -153,8 +154,7 @@ async function populateReport(report, user, args) {
     .atmosphere.always()
     .atmosphereDetails.always()
     .location.always()
-    .author.always()
-    .attendees.always()
+    .reportPeople.always()
     .tasks.always()
     .reportText.always()
     .nextSteps.always()
@@ -226,9 +226,11 @@ const updateDraftReport = async function(user) {
             cancelledReason
             atmosphere
             atmosphereDetails
-            attendees {
+            reportPeople {
               uuid
+              author
               primary
+              attendee
             }
           }
         }
