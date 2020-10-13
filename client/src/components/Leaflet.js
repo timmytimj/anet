@@ -41,7 +41,7 @@ const css = {
 }
 
 class CustomUrlEsriProvider extends EsriProvider {
-  constructor(searchUrl: string, options = {}) {
+  constructor(searchUrl, options = {}) {
     super(options)
     if (searchUrl) {
       if (searchUrl.startsWith("http://") || searchUrl.startsWith("https://")) {
@@ -300,10 +300,13 @@ const BaseLeaflet = ({
           })
           .bindPopup(popupContent)
           .on("popupopen", e => {
-            // TODO LinkTo component will be utilized here to provide routing
             ReactDOM.render(
               <>
-                <b>{location.name}</b> @{" "}
+                <b>
+                  {/* // TODO: Find a way to work with LinkTo in different entry point here, not nested inside Router context */}
+                  <a href={`/locations/${location.uuid}`}>{location.name}</a>
+                </b>{" "}
+                @{" "}
                 <GeoLocation
                   coordinates={{
                     lat: location.lat,
