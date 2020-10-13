@@ -423,14 +423,6 @@ export default class Report extends Model {
     return attendees.find(el => el.role === role && el.primary)
   }
 
-  static isEngagementAllDay(report) {
-    return !report.duration
-  }
-
-  static getAllDayIndicator(report) {
-    return Report.isEngagementAllDay(report) ? "(all day)" : ""
-  }
-
   static getEngagementDateFormat() {
     return Settings.engagementsIncludeTimeAndDuration
       ? Settings.dateFormats.forms.displayLong.withTime
@@ -537,6 +529,14 @@ export default class Report extends Model {
     )
   }
 
+  static isEngagementAllDay(report) {
+    return !report.duration
+  }
+
+  static getAllDayIndicator(report) {
+    return Report.isEngagementAllDay(report) ? " (all day)" : ""
+  }
+
   static getFormattedEngagementDate(report) {
     if (!report?.engagementDate) {
       return ""
@@ -546,7 +546,7 @@ export default class Report extends Model {
     if (Report.isEngagementAllDay(report)) {
       return Settings.engagementsIncludeTimeAndDuration
         ? start.format(Settings.dateFormats.forms.displayLong.date) +
-            " (all day)"
+            Report.getAllDayIndicator(report)
         : start.format(Report.getEngagementDateFormat())
     }
 
