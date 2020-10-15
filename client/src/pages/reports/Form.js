@@ -1168,7 +1168,7 @@ const ReportForm = ({
       }
       // if no one else is primary, set that person primary if attending
       if (
-        !reportPeople.find(a2 => rp.role === a2.role && a2.primary) &&
+        !reportPeople.some(a2 => rp.role === a2.role && a2.primary) &&
         rp.attendee
       ) {
         rp.primary = true
